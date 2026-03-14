@@ -69,6 +69,19 @@ def extract_checkboxes(body, heading):
     done  = len(re.findall(r"- \[x\]", section, re.IGNORECASE))
     return done, total
 
+def extract_acceptance_criteria(body):
+    """Return list of {text, done} dicts from ## Acceptance Criteria."""
+    section = extract_section(body, "Acceptance Criteria")
+    items = []
+    for line in section.splitlines():
+        m = re.match(r"\s*-\s*\[([ xX])\]\s*(.+)", line)
+        if m:
+            items.append({
+                "done": m.group(1).lower() == "x",
+                "text": m.group(2).strip()
+            })
+    return items
+
 def latest_note(body):
     """Return the most recent timestamped note from ## Notes."""
     section = extract_section(body, "Notes")
@@ -145,8 +158,9 @@ for fname in sorted(os.listdir(TASKS_DIR)):
         "progress":    progress_pct,
         "progressStr": f"{progress_pct}%" if total_checks > 0 else "—",
         "latestNote":  note,
-        "context":     extract_section(body, "Context"),
-        "description": extract_section(body, "Objective"),
+        "context":             extract_section(body, "Context"),
+        "description":         extract_section(body, "Objective"),
+        "acceptanceCriteria":  extract_acceptance_criteria(body),
     }
     tasks.append(task)
 

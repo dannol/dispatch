@@ -1079,6 +1079,24 @@ function openPanel(id) {
     ${deps!=='—' ? `<div class="p-label" style="margin-bottom:6px">Dependencies</div><div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px">${esc(deps)}</div>` : ''}
     ${blocked!=='—' ? `<div class="p-label" style="margin-bottom:6px">Blocked By</div><div style="font-size:12px;color:var(--accent-orange);margin-bottom:16px">${esc(blocked)}</div>` : ''}
     ${tags ? `<div class="p-label" style="margin-bottom:6px">Tags</div><div style="margin-bottom:16px">${tags}</div>` : ''}
+    ${t.acceptanceCriteria && t.acceptanceCriteria.length ? (() => {
+      const doneCount  = t.acceptanceCriteria.filter(i => i.done).length;
+      const totalCount = t.acceptanceCriteria.length;
+      const pct        = Math.round((doneCount / totalCount) * 100);
+      const items      = t.acceptanceCriteria.map(item => `
+        <div style="display:flex;align-items:flex-start;gap:9px">
+          <div style="width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;${item.done ? 'background:var(--accent-green);border:1.5px solid var(--accent-green)' : 'border:1.5px solid var(--bg-4)'}">
+            ${item.done ? '<svg width="8" height="5" viewBox="0 0 8 5" fill="none"><polyline points="1,2.5 3,4.5 7,0.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+          </div>
+          <span style="font-size:13px;line-height:1.45;${item.done ? 'color:var(--text-secondary);text-decoration:line-through' : 'color:var(--text-primary)'}">${esc(item.text)}</span>
+        </div>`).join('');
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="p-label" style="margin-bottom:0">Acceptance Criteria</div>
+          <span style="font-size:11px;color:var(--text-secondary)">${doneCount}/${totalCount} &nbsp;<span style="color:${pct===100?'var(--accent-green)':'var(--text-tertiary)'}">${pct}%</span></span>
+        </div>
+        <div style="margin-bottom:20px;display:flex;flex-direction:column;gap:8px">${items}</div>`;
+    })() : ''}
     ${t.latestNote ? `<div class="p-label">Latest Note</div>
     <div class="panel-log" style="margin-bottom:20px;white-space:pre-wrap;font-family:inherit;font-size:12px;line-height:1.7">${esc(t.latestNote.slice(0,600))}${t.latestNote.length>600?'…':''}</div>` : ''}
     <div class="p-label" style="margin-bottom:8px">Objective</div>

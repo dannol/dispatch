@@ -208,7 +208,38 @@ body {
   gap: 8px;
   padding: 0 28px 14px;
   flex-shrink: 0;
+  position: relative;
 }
+/* Dropdowns */
+.dd-wrap { position: relative; }
+.dd-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: 4px;
+  min-width: 170px;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.dd-menu.open { display: block; }
+.dd-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dd-item:hover { background: var(--bg-3); color: var(--text-primary); }
+.dd-item.active { color: var(--text-primary); }
+.dd-item.active::after { content: '✓'; color: var(--accent-green); font-size: 11px; }
+.dd-sep { height: 1px; background: var(--border); margin: 4px 0; }
 .search-wrap { position: relative; flex: 1; max-width: 340px; }
 .search-icon-abs {
   position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
@@ -665,14 +696,33 @@ tbody td:last-child  { padding-right: 28px; }
       <div class="main-title-row">
         <div class="main-title">AI Tasks</div>
         <div class="main-actions">
-          <button class="btn btn-secondary">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-            Filter
-          </button>
-          <button class="btn btn-secondary">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg>
-            Sort
-          </button>
+          <div class="dd-wrap">
+            <button class="btn btn-secondary" id="filterBtn" onclick="toggleDd('filterMenu','filterBtn')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+              Filter
+            </button>
+            <div class="dd-menu" id="filterMenu">
+              <div class="dd-item active" id="fp-all"    onclick="setFilter('priority','all')">All priorities</div>
+              <div class="dd-sep"></div>
+              <div class="dd-item" id="fp-critical" onclick="setFilter('priority','critical')">Critical</div>
+              <div class="dd-item" id="fp-high"     onclick="setFilter('priority','high')">High</div>
+              <div class="dd-item" id="fp-medium"   onclick="setFilter('priority','medium')">Medium</div>
+              <div class="dd-item" id="fp-low"      onclick="setFilter('priority','low')">Low</div>
+            </div>
+          </div>
+          <div class="dd-wrap">
+            <button class="btn btn-secondary" id="sortBtn" onclick="toggleDd('sortMenu','sortBtn')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg>
+              Sort
+            </button>
+            <div class="dd-menu" id="sortMenu">
+              <div class="dd-item active" id="so-updated"  onclick="setSort('updated')">Updated</div>
+              <div class="dd-item" id="so-priority" onclick="setSort('priority')">Priority</div>
+              <div class="dd-item" id="so-progress" onclick="setSort('progress')">Progress</div>
+              <div class="dd-item" id="so-status"   onclick="setSort('status')">Status</div>
+              <div class="dd-item" id="so-title"    onclick="setSort('title')">Title</div>
+            </div>
+          </div>
           <button class="btn btn-primary" onclick="openNewTask()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Task
@@ -1011,12 +1061,8 @@ function animateBars() {
 // ── FILTER / TABS ─────────────────────────────────
 let currentFilter = 'all';
 function dtSwitchTab(el, filter) {
-  // clear any agent filter
   activeAgent = null;
   document.querySelectorAll('#agentList .sidebar-item').forEach(i => i.classList.remove('active'));
-  renderDesktop(DISPATCH_TASKS);
-  renderMobile(DISPATCH_TASKS);
-  updateCounts(DISPATCH_TASKS);
 
   currentFilter = filter;
   document.querySelectorAll('.sidebar-item[onclick]').forEach(i => {
@@ -1026,6 +1072,7 @@ function dtSwitchTab(el, filter) {
     const t = document.getElementById('dt-tab-'+f);
     if (t) t.classList.toggle('active', f===filter);
   });
+  applyAll();
   applyDtFilter(filter);
 }
 function dtSwitchTabByFilter(f) { dtSwitchTab(null,f); }
@@ -1042,6 +1089,77 @@ function applyDtFilter(filter) {
     s.style.display = filter==='all' ? '' : 'none';
   });
 }
+// ── DROPDOWN HELPERS ──────────────────────────────
+function toggleDd(menuId, btnId) {
+  const menu = document.getElementById(menuId);
+  const isOpen = menu.classList.contains('open');
+  // close all
+  document.querySelectorAll('.dd-menu').forEach(m => m.classList.remove('open'));
+  if (!isOpen) menu.classList.add('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dd-wrap')) {
+    document.querySelectorAll('.dd-menu').forEach(m => m.classList.remove('open'));
+  }
+});
+
+// ── FILTER / SORT STATE ────────────────────────────
+let activePriorityFilter = 'all';
+let activeSort = 'updated';
+const PRIORITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
+
+function setFilter(type, val) {
+  if (type === 'priority') {
+    activePriorityFilter = val;
+    document.querySelectorAll('[id^="fp-"]').forEach(el => el.classList.remove('active'));
+    document.getElementById('fp-' + val)?.classList.add('active');
+    // update button label
+    const label = val === 'all' ? 'Filter' : val.charAt(0).toUpperCase() + val.slice(1);
+    document.getElementById('filterBtn').childNodes[document.getElementById('filterBtn').childNodes.length - 1].textContent = ' ' + label;
+  }
+  document.querySelectorAll('.dd-menu').forEach(m => m.classList.remove('open'));
+  applyAll();
+}
+function setSort(field) {
+  activeSort = field;
+  document.querySelectorAll('[id^="so-"]').forEach(el => el.classList.remove('active'));
+  document.getElementById('so-' + field)?.classList.add('active');
+  // update button label
+  const labels = { updated: 'Sort', priority: 'Priority', progress: 'Progress', status: 'Status', title: 'Title' };
+  document.getElementById('sortBtn').childNodes[document.getElementById('sortBtn').childNodes.length - 1].textContent = ' ' + (labels[field] || 'Sort');
+  document.querySelectorAll('.dd-menu').forEach(m => m.classList.remove('open'));
+  applyAll();
+}
+function applyAll() {
+  let tasks = activeAgent
+    ? DISPATCH_TASKS.filter(t => (t.agent || 'Unassigned') === activeAgent)
+    : [...DISPATCH_TASKS];
+
+  // priority filter
+  if (activePriorityFilter !== 'all') {
+    tasks = tasks.filter(t => (t.priority || '').toLowerCase() === activePriorityFilter);
+  }
+
+  // sort
+  tasks.sort((a, b) => {
+    if (activeSort === 'priority') {
+      return (PRIORITY_ORDER[a.priority?.toLowerCase()] ?? 99) - (PRIORITY_ORDER[b.priority?.toLowerCase()] ?? 99);
+    }
+    if (activeSort === 'progress') return (b.progress || 0) - (a.progress || 0);
+    if (activeSort === 'status')   return (a.status || '').localeCompare(b.status || '');
+    if (activeSort === 'title')    return (a.title || '').localeCompare(b.title || '');
+    // default: updated (descending)
+    return new Date(b.updated || 0) - new Date(a.updated || 0);
+  });
+
+  renderDesktop(tasks);
+  renderMobile(tasks);
+  updateCounts(tasks);
+  // re-apply tab visibility filter
+  applyDtFilter(currentFilter);
+}
+
+// ── SEARCH ────────────────────────────────────────
 function dtFilter(q) {
   q = q.toLowerCase();
   document.querySelectorAll('.dt-row').forEach(row => {
@@ -1145,24 +1263,17 @@ function renderAgents(tasks) {
 function filterByAgent(name) {
   const allItems = document.querySelectorAll('#agentList .sidebar-item');
   if (activeAgent === name) {
-    // toggle off
     activeAgent = null;
     allItems.forEach(el => el.classList.remove('active'));
-    renderDesktop(DISPATCH_TASKS);
-    renderMobile(DISPATCH_TASKS);
-    updateCounts(DISPATCH_TASKS);
   } else {
     activeAgent = name;
     allItems.forEach(el => el.classList.remove('active'));
-    // clear tab active state
     document.querySelectorAll('.sidebar-item[onclick^="dtSwitchTab"]').forEach(el => el.classList.remove('active'));
     const item = document.getElementById('agent-item-' + CSS.escape(name));
     if (item) item.classList.add('active');
-    const filtered = DISPATCH_TASKS.filter(t => (t.agent || 'Unassigned') === name);
-    renderDesktop(filtered);
-    renderMobile(filtered);
-    updateCounts(filtered);
   }
+  applyAll();
+  applyDtFilter(currentFilter);
 }
 
 // ── INIT ──────────────────────────────────────────

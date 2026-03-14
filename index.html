@@ -656,7 +656,7 @@ tbody td:last-child  { padding-right: 28px; }
     </div>
     <div class="sidebar-item" onclick="dtSwitchTab(this,'running')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Running
+      In Progress
       <span class="sidebar-badge">3</span>
     </div>
     <div class="sidebar-item" onclick="dtSwitchTab(this,'pending')">
@@ -669,9 +669,9 @@ tbody td:last-child  { padding-right: 28px; }
       Completed
       <span class="sidebar-badge">2</span>
     </div>
-    <div class="sidebar-item" onclick="dtSwitchTab(this,'failed')">
+    <div class="sidebar-item" onclick="dtSwitchTab(this,'blocked')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      Failed
+      Blocked
       <span class="sidebar-badge">1</span>
     </div>
 
@@ -738,7 +738,7 @@ tbody td:last-child  { padding-right: 28px; }
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         </div>
         <div>
-          <div class="sum-label">Running</div>
+          <div class="sum-label">In Progress</div>
           <div class="sum-value" style="color:var(--accent-blue)">3</div>
         </div>
       </div>
@@ -765,7 +765,7 @@ tbody td:last-child  { padding-right: 28px; }
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </div>
         <div>
-          <div class="sum-label">Failed</div>
+          <div class="sum-label">Blocked</div>
           <div class="sum-value" style="color:var(--accent-red)">1</div>
         </div>
       </div>
@@ -782,10 +782,10 @@ tbody td:last-child  { padding-right: 28px; }
     <!-- Tabs -->
     <div class="tabs">
       <div class="tab active" id="dt-tab-all"       onclick="dtSwitchTab(null,'all')">All Tasks</div>
-      <div class="tab"        id="dt-tab-running"   onclick="dtSwitchTab(null,'running')">Running</div>
+      <div class="tab"        id="dt-tab-running"   onclick="dtSwitchTab(null,'running')">In Progress</div>
       <div class="tab"        id="dt-tab-pending"   onclick="dtSwitchTab(null,'pending')">Queue</div>
       <div class="tab"        id="dt-tab-done"      onclick="dtSwitchTab(null,'done')">Completed</div>
-      <div class="tab"        id="dt-tab-failed"    onclick="dtSwitchTab(null,'failed')">Failed</div>
+      <div class="tab"        id="dt-tab-blocked"    onclick="dtSwitchTab(null,'blocked')">Blocked</div>
     </div>
 
     <!-- Table -->
@@ -846,7 +846,7 @@ tbody td:last-child  { padding-right: 28px; }
   </div>
   <div class="m-tabs">
     <div class="m-tab active" onclick="mSwitchTab(this,'all')">All Tasks</div>
-    <div class="m-tab" onclick="mSwitchTab(this,'running')">Running</div>
+    <div class="m-tab" onclick="mSwitchTab(this,'running')">In Progress</div>
     <div class="m-tab" onclick="mSwitchTab(this,'pending')">Queue</div>
     <div class="m-tab" onclick="mSwitchTab(this,'done')">Completed</div>
   </div>
@@ -869,10 +869,10 @@ tbody td:last-child  { padding-right: 28px; }
       </div>
     </div>
     <div class="m-summary-strip">
-      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-blue-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div><div class="m-sum-label">Running</div><div class="m-sum-value" style="color:var(--accent-blue)">3</div></div></div>
+      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-blue-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div><div class="m-sum-label">In Progress</div><div class="m-sum-value" style="color:var(--accent-blue)">3</div></div></div>
       <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-orange-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="m-sum-label">Queued</div><div class="m-sum-value" style="color:var(--accent-orange)">4</div></div></div>
-      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-green-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="m-sum-label">Done</div><div class="m-sum-value" style="color:var(--accent-green)">2</div></div></div>
-      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-red-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div><div class="m-sum-label">Failed</div><div class="m-sum-value" style="color:var(--accent-red)">1</div></div></div>
+      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-green-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="m-sum-label">Completed</div><div class="m-sum-value" style="color:var(--accent-green)">2</div></div></div>
+      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-red-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div><div class="m-sum-label">Blocked</div><div class="m-sum-value" style="color:var(--accent-red)">1</div></div></div>
     </div>
     <div class="m-search-row">
       <div class="m-search-wrap">
@@ -918,7 +918,7 @@ function agentInitial(name) {
 }
 
 // ── STATUS DISPLAY ────────────────────────────────
-const STATUS_LABEL = { running:'Running', pending:'Queued', blocked:'Blocked', done:'Done', failed:'Failed', reviewing:'Reviewing' };
+const STATUS_LABEL = { running:'In Progress', pending:'Queued', blocked:'Blocked', done:'Completed', reviewing:'Reviewing' };
 
 // ── PRIORITY CSS CLASS ────────────────────────────
 function priClass(p) {
@@ -934,7 +934,7 @@ const SECTIONS = [
   { label:'Queued',    statuses:['pending'] },
   { label:'Blocked',   statuses:['blocked'] },
   { label:'Completed', statuses:['done'] },
-  { label:'Failed',    statuses:['failed'] },
+  { label:'Blocked',   statuses:['blocked'] },
 ];
 
 // ── RENDER DESKTOP TABLE ──────────────────────────
@@ -947,8 +947,8 @@ function renderDesktop(tasks) {
     html += `<tr class="section-row"><td colspan="7">${sec.label}</td></tr>`;
     rows.forEach(t => {
       const isDone    = t.status === 'done';
-      const isFailed  = t.status === 'failed';
-      const progColor = t.status === 'failed' ? 'var(--accent-red)' : t.status === 'reviewing' ? 'var(--accent-purple)' : 'var(--accent-green)';
+      const isFailed  = t.status === 'blocked';
+      const progColor = t.status === 'blocked' ? 'var(--accent-red)' : t.status === 'reviewing' ? 'var(--accent-purple)' : 'var(--accent-green)';
       html += `
       <tr class="dt-row" data-status="${t.status}" onclick="openPanel('${t.id}')">
         <td><div class="task-check${isDone?' done':''}"></div></td>
@@ -984,8 +984,8 @@ function renderMobile(tasks) {
     html += `<div class="m-section-label">${sec.label}</div><div class="m-task-list">`;
     rows.forEach(t => {
       const isDone   = t.status === 'done';
-      const isFailed = t.status === 'failed';
-      const progColor = t.status === 'failed' ? 'var(--accent-red)' : t.status === 'reviewing' ? 'var(--accent-purple)' : 'var(--accent-green)';
+      const isFailed = t.status === 'blocked';
+      const progColor = t.status === 'blocked' ? 'var(--accent-red)' : t.status === 'reviewing' ? 'var(--accent-purple)' : 'var(--accent-green)';
       const priPip   = priClass(t.priority);
       const hasBar   = t.progress > 0;
       html += `
@@ -1017,25 +1017,25 @@ function renderMobile(tasks) {
 
 // ── UPDATE SUMMARY COUNTS ─────────────────────────
 function updateCounts(tasks) {
-  const c = { running:0, pending:0, done:0, failed:0, blocked:0 };
+  const c = { running:0, pending:0, done:0, blocked:0 };
   tasks.forEach(t => {
     if (t.status==='running'||t.status==='reviewing') c.running++;
     else if (t.status==='pending'||t.status==='blocked') c.pending++;
     else if (t.status==='done')   c.done++;
-    else if (t.status==='failed') c.failed++;
+    else if (t.status==='blocked') c.blocked++;
   });
   // desktop summary cards (by position)
   const vals = document.querySelectorAll('.sum-value');
   if (vals[0]) vals[0].textContent = c.running;
   if (vals[1]) vals[1].textContent = c.pending;
   if (vals[2]) vals[2].textContent = c.done;
-  if (vals[3]) vals[3].textContent = c.failed;
+  if (vals[3]) vals[3].textContent = c.blocked;
   // mobile summary cards
   const mvals = document.querySelectorAll('.m-sum-value');
   if (mvals[0]) mvals[0].textContent = c.running;
   if (mvals[1]) mvals[1].textContent = c.pending;
   if (mvals[2]) mvals[2].textContent = c.done;
-  if (mvals[3]) mvals[3].textContent = c.failed;
+  if (mvals[3]) mvals[3].textContent = c.blocked;
   // sidebar badges
   const sideAll = document.querySelector('.sidebar-item[onclick*="\'all\'"] .sidebar-badge');
   if (sideAll) sideAll.textContent = tasks.length;
@@ -1045,8 +1045,8 @@ function updateCounts(tasks) {
   if (sidePen) sidePen.textContent = c.pending;
   const sideDone = document.querySelector('.sidebar-item[onclick*="\'done\'"] .sidebar-badge');
   if (sideDone) sideDone.textContent = c.done;
-  const sideFail = document.querySelector('.sidebar-item[onclick*="\'failed\'"] .sidebar-badge');
-  if (sideFail) sideFail.textContent = c.failed;
+  const sideFail = document.querySelector('.sidebar-item[onclick*="\'blocked\'"] .sidebar-badge');
+  if (sideFail) sideFail.textContent = c.blocked;
 }
 
 // ── HELPERS ───────────────────────────────────────
@@ -1073,7 +1073,7 @@ function dtSwitchTab(el, filter) {
   document.querySelectorAll('.sidebar-item[onclick]').forEach(i => {
     i.classList.toggle('active', i.getAttribute('onclick').includes("'"+filter+"'"));
   });
-  ['all','running','pending','done','failed'].forEach(f => {
+  ['all','running','pending','done','blocked'].forEach(f => {
     const t = document.getElementById('dt-tab-'+f);
     if (t) t.classList.toggle('active', f===filter);
   });

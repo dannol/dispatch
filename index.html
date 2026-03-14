@@ -373,7 +373,7 @@ tbody td:last-child  { padding-right: 28px; }
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
-.agent-name { font-size: 12px; color: var(--text-secondary); }
+.agent-name { font-size: 12px; color: var(--text-secondary); text-transform: lowercase; }
 
 /* Priority */
 .priority { display: flex; align-items: center; gap: 5px; font-size: 12px; }
@@ -605,7 +605,7 @@ tbody td:last-child  { padding-right: 28px; }
 }
 .m-task-name.done { color: var(--text-secondary); text-decoration: line-through; }
 .m-task-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
-.m-agent-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+.m-agent-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); text-transform: lowercase; }
 .m-agent-dot {
   width: 16px; height: 16px; border-radius: 5px;
   display: flex; align-items: center; justify-content: center;
@@ -1020,8 +1020,8 @@ function updateCounts(tasks) {
   const c = { running:0, pending:0, done:0, blocked:0 };
   tasks.forEach(t => {
     if (t.status==='running'||t.status==='reviewing') c.running++;
-    else if (t.status==='pending'||t.status==='blocked') c.pending++;
-    else if (t.status==='done')   c.done++;
+    else if (t.status==='pending') c.pending++;
+    else if (t.status==='done')    c.done++;
     else if (t.status==='blocked') c.blocked++;
   });
   // desktop summary cards (by position)

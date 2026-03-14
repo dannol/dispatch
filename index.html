@@ -1082,7 +1082,14 @@ function openPanel(id) {
   const deps    = (t.dependencies||[]).filter(Boolean).join(', ') || '—';
   const blocked = (t.blockedBy||[]).filter(Boolean).join(', ')    || '—';
 
+  document.getElementById('panelTitle').textContent = t.title || t.id;
+  document.getElementById('panelSub').textContent   = t.id;
+
   document.getElementById('panelBody').innerHTML = `
+    <div style="margin-bottom:20px">
+      <div class="p-label" style="margin-bottom:6px">Objective</div>
+      <div class="panel-desc">${esc(t.objective||'—')}</div>
+    </div>
     <div class="panel-meta">
       <div class="meta-item"><div class="meta-key">Status</div><div class="meta-val">${STATUS_LABEL[t.status]||t.status}</div></div>
       <div class="meta-item"><div class="meta-key">Agent</div><div class="meta-val">${esc(t.agent||'Unassigned')}</div></div>
@@ -1114,8 +1121,6 @@ function openPanel(id) {
     })() : ''}
     ${t.latestNote ? `<div class="p-label">Latest Note</div>
     <div class="panel-log" style="margin-bottom:20px;white-space:pre-wrap;font-family:inherit;font-size:12px;line-height:1.7">${esc(t.latestNote.slice(0,600))}${t.latestNote.length>600?'…':''}</div>` : ''}
-    <div class="p-label" style="margin-bottom:8px">Objective</div>
-    <div class="panel-desc">${esc(t.objective||'—')}</div>
   `;
 
   const panel = document.getElementById('detailPanel');

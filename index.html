@@ -645,22 +645,7 @@ tbody td:last-child  { padding-right: 28px; }
     </div>
 
     <div class="sidebar-section" style="margin-top:8px">Agents</div>
-    <div class="sidebar-item">
-      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0a84ff,#0055cc);flex-shrink:0"></div>
-      Claude 3.5
-    </div>
-    <div class="sidebar-item">
-      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#bf5af2,#8e2de2);flex-shrink:0"></div>
-      GPT-4o
-    </div>
-    <div class="sidebar-item">
-      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#ff9f0a,#c97800);flex-shrink:0"></div>
-      DeepL AI
-    </div>
-    <div class="sidebar-item">
-      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#ff453a,#b00);flex-shrink:0"></div>
-      AutoGPT
-    </div>
+    <div id="agentList"></div>
 
     <div class="sidebar-footer">
       <div class="sidebar-item">
@@ -1026,6 +1011,13 @@ function animateBars() {
 // ── FILTER / TABS ─────────────────────────────────
 let currentFilter = 'all';
 function dtSwitchTab(el, filter) {
+  // clear any agent filter
+  activeAgent = null;
+  document.querySelectorAll('#agentList .sidebar-item').forEach(i => i.classList.remove('active'));
+  renderDesktop(DISPATCH_TASKS);
+  renderMobile(DISPATCH_TASKS);
+  updateCounts(DISPATCH_TASKS);
+
   currentFilter = filter;
   document.querySelectorAll('.sidebar-item[onclick]').forEach(i => {
     i.classList.toggle('active', i.getAttribute('onclick').includes("'"+filter+"'"));
@@ -1133,6 +1125,46 @@ function closePanel() {
 }
 function openNewTask() { alert('New task dialog — coming next iteration!'); }
 
+// ── AGENT SIDEBAR ─────────────────────────────────
+let activeAgent = null;
+function renderAgents(tasks) {
+  const counts = {};
+  tasks.forEach(t => {
+    const a = t.agent || 'Unassigned';
+    counts[a] = (counts[a] || 0) + 1;
+  });
+  const agents = Object.keys(counts).sort();
+  const el = document.getElementById('agentList');
+  el.innerHTML = agents.map(name => `
+    <div class="sidebar-item" id="agent-item-${CSS.escape(name)}" onclick="filterByAgent('${name.replace(/'/g,"\\'")}')">
+      <div style="width:14px;height:14px;border-radius:4px;background:${agentGradient(name)};flex-shrink:0"></div>
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
+      <span class="sidebar-badge">${counts[name]}</span>
+    </div>`).join('');
+}
+function filterByAgent(name) {
+  const allItems = document.querySelectorAll('#agentList .sidebar-item');
+  if (activeAgent === name) {
+    // toggle off
+    activeAgent = null;
+    allItems.forEach(el => el.classList.remove('active'));
+    renderDesktop(DISPATCH_TASKS);
+    renderMobile(DISPATCH_TASKS);
+    updateCounts(DISPATCH_TASKS);
+  } else {
+    activeAgent = name;
+    allItems.forEach(el => el.classList.remove('active'));
+    // clear tab active state
+    document.querySelectorAll('.sidebar-item[onclick^="dtSwitchTab"]').forEach(el => el.classList.remove('active'));
+    const item = document.getElementById('agent-item-' + CSS.escape(name));
+    if (item) item.classList.add('active');
+    const filtered = DISPATCH_TASKS.filter(t => (t.agent || 'Unassigned') === name);
+    renderDesktop(filtered);
+    renderMobile(filtered);
+    updateCounts(filtered);
+  }
+}
+
 // ── INIT ──────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   if (typeof DISPATCH_TASKS === 'undefined' || !DISPATCH_TASKS.length) {
@@ -1144,6 +1176,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderDesktop(DISPATCH_TASKS);
   renderMobile(DISPATCH_TASKS);
   updateCounts(DISPATCH_TASKS);
+  renderAgents(DISPATCH_TASKS);
 });
 </script>
 </body>

@@ -760,7 +760,7 @@ tbody td:last-child  { padding-right: 28px; }
           <div class="sum-value" style="color:var(--accent-green)">2</div>
         </div>
       </div>
-      <div class="sum-card">
+      <div class="sum-card" onclick="dtSwitchTabByFilter('blocked')">
         <div class="sum-icon" style="background:var(--accent-red-dim)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </div>
@@ -1261,7 +1261,7 @@ function renderAgents(tasks) {
   el.innerHTML = agents.map(name => `
     <div class="sidebar-item" id="agent-item-${CSS.escape(name)}" onclick="filterByAgent('${name.replace(/'/g,"\\'")}')">
       <div style="width:14px;height:14px;border-radius:4px;background:${agentGradient(name)};flex-shrink:0"></div>
-      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:lowercase">${esc(name)}</span>
       <span class="sidebar-badge">${counts[name]}</span>
     </div>`).join('');
 }

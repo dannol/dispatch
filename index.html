@@ -359,7 +359,7 @@ tbody td:last-child  { padding-right: 28px; }
 
 .time-cell { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
 
-/* ── Detail Panel (slides from right) ── */
+/* ── Detail Panel ── */
 .panel-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.45); z-index: 100;
@@ -376,6 +376,21 @@ tbody td:last-child  { padding-right: 28px; }
   transition: transform .25s cubic-bezier(.32,.72,0,1);
 }
 .panel.open { transform: translateX(0); }
+
+/* On mobile: bottom sheet instead of side panel */
+@media (max-width: 899px) {
+  .panel {
+    left: 0; right: 0; bottom: 0; top: auto;
+    width: 100%; max-height: 88vh;
+    border-radius: 20px 20px 0 0;
+    border-left: none;
+    border-top: 1px solid var(--border-strong);
+    transform: translateY(100%);
+    transition: transform .28s cubic-bezier(.32,.72,0,1);
+  }
+  .panel.open { transform: translateY(0); }
+  #panelHandleMobile { display: block !important; }
+}
 .panel-header {
   padding: 18px 20px 14px;
   border-bottom: 1px solid var(--border);
@@ -1103,16 +1118,7 @@ function openPanel(id) {
     <div class="panel-desc">${esc(t.objective||'—')}</div>
   `;
 
-  const isMobile = window.innerWidth < 900;
-  const panel    = document.getElementById('detailPanel');
-  const handle   = document.getElementById('panelHandleMobile');
-  if (isMobile) {
-    panel.style.cssText = 'position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:88vh;border-radius:20px 20px 0 0;border-left:none;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1)';
-    handle.style.display = 'block';
-  } else {
-    panel.style.cssText = '';
-    handle.style.display = 'none';
-  }
+  const panel = document.getElementById('detailPanel');
   document.getElementById('panelOverlay').classList.add('open');
   requestAnimationFrame(() => panel.classList.add('open'));
 }

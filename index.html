@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Task Manager</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg-0:   #1f2224;
+  --bg-1:   #1f2224;
+  --bg-2:   #2a2d30;
+  --bg-3:   #333739;
+  --bg-4:   #3e4245;
+  --text-primary:   #ffffff;
+  --text-secondary: #8e8e93;
+  --text-tertiary:  #4a4e52;
+  --accent-green:   #30d158;
+  --accent-green-dim:  rgba(48,209,88,.13);
+  --accent-blue:    #0a84ff;
+  --accent-blue-dim:   rgba(10,132,255,.13);
+  --accent-orange:  #ff9f0a;
+  --accent-orange-dim: rgba(255,159,10,.13);
+  --accent-red:     #ff453a;
+  --accent-red-dim:    rgba(255,69,58,.13);
+  --accent-purple:  #bf5af2;
+  --accent-purple-dim: rgba(191,90,242,.13);
+  --border:        rgba(255,255,255,.07);
+  --border-strong: rgba(255,255,255,.12);
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg-0);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  height: 100%;
+}
+
+/* ════════════════════════════════════
+   DESKTOP LAYOUT  (≥ 900px)
+════════════════════════════════════ */
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-header {
+  padding: 20px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-avatar {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #30d158, #1a9e40);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-workspace { font-size: 13px; font-weight: 600; flex: 1; }
+.sidebar-chevron { color: var(--text-tertiary); cursor: pointer; }
+
+.sidebar-section {
+  padding: 16px 10px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  margin: 1px 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.sidebar-item:hover  { background: var(--bg-2); color: var(--text-primary); }
+.sidebar-item.active { background: var(--bg-3); color: var(--text-primary); }
+.sidebar-item svg    { flex-shrink: 0; }
+.sidebar-badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  background: var(--bg-3);
+  border-radius: 10px;
+  padding: 1px 7px;
+  min-width: 20px;
+  text-align: center;
+}
+.sidebar-item.active .sidebar-badge { background: var(--bg-4); color: var(--text-secondary); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 6px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Main ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.main-header {
+  padding: 20px 28px 0;
+  flex-shrink: 0;
+}
+.main-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.main-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+.main-actions { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  display: flex; align-items: center; gap: 6px;
+  border: none; border-radius: var(--r-sm);
+  padding: 7px 13px;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: opacity .15s, background .15s;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--accent-green); color: #fff; }
+.btn-primary:hover { opacity: .85; }
+.btn-secondary { background: var(--bg-2); border: 1px solid var(--border); color: var(--text-secondary); }
+.btn-secondary:hover { background: var(--bg-3); color: var(--text-primary); }
+.btn-icon {
+  background: var(--bg-2); border: 1px solid var(--border);
+  color: var(--text-secondary);
+  width: 32px; height: 32px; padding: 0;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.btn-icon:hover { background: var(--bg-3); color: var(--text-primary); }
+
+/* Summary strip */
+.summary-strip {
+  display: flex;
+  gap: 10px;
+  padding: 0 28px 16px;
+  flex-shrink: 0;
+}
+.sum-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  transition: background .15s;
+  flex: 1;
+}
+.sum-card:hover { background: var(--bg-3); }
+.sum-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sum-label { font-size: 11px; color: var(--text-secondary); }
+.sum-value { font-size: 18px; font-weight: 700; line-height: 1.1; }
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 28px 14px;
+  flex-shrink: 0;
+}
+.search-wrap { position: relative; flex: 1; max-width: 340px; }
+.search-icon-abs {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--text-secondary); pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 7px 12px 7px 32px;
+  color: var(--text-primary); font-size: 13px; outline: none;
+}
+.search-input::placeholder { color: var(--text-tertiary); }
+.search-input:focus { border-color: var(--border-strong); }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab {
+  padding: 8px 0; margin-right: 22px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+
+/* ── Table ── */
+.table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+.table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 3px; }
+
+table { width: 100%; border-collapse: collapse; min-width: 680px; }
+
+thead th {
+  text-align: left;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text-tertiary);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky; top: 0; background: var(--bg-0); z-index: 1;
+}
+thead th:first-child { padding-left: 28px; }
+thead th:last-child  { padding-right: 28px; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+}
+tbody tr:hover { background: rgba(255,255,255,.025); }
+tbody tr.section-row:hover { background: transparent; cursor: default; }
+tbody tr:last-child { border-bottom: none; }
+
+tbody td {
+  padding: 12px 14px;
+  vertical-align: middle;
+  font-size: 13px;
+}
+tbody td:first-child { padding-left: 28px; }
+tbody td:last-child  { padding-right: 28px; }
+
+.section-row td {
+  padding: 18px 28px 5px;
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Check cell */
+.check-cell { width: 36px; }
+.task-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--bg-4); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, background .15s;
+  cursor: pointer;
+}
+.task-check:hover { border-color: var(--accent-green); }
+.task-check.done  { background: var(--accent-green); border-color: var(--accent-green); }
+.task-check.done::after {
+  content: '';
+  width: 7px; height: 4.5px;
+  border-left: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+
+/* Task name cell */
+.task-name-cell .name { font-size: 13px; font-weight: 500; }
+.task-name-cell .name.done { color: var(--text-secondary); text-decoration: line-through; }
+.task-name-cell .sub  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+.badge-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.badge.running   { background: var(--accent-blue-dim);   color: var(--accent-blue);   }
+.badge.running   .badge-dot { background: var(--accent-blue);   animation: pulse 1.4s infinite; }
+.badge.pending   { background: var(--accent-orange-dim); color: var(--accent-orange); }
+.badge.pending   .badge-dot { background: var(--accent-orange); }
+.badge.done      { background: var(--accent-green-dim);  color: var(--accent-green);  }
+.badge.done      .badge-dot { background: var(--accent-green);  }
+.badge.failed    { background: var(--accent-red-dim);    color: var(--accent-red);    }
+.badge.failed    .badge-dot { background: var(--accent-red);    }
+.badge.reviewing { background: var(--accent-purple-dim); color: var(--accent-purple); }
+.badge.reviewing .badge-dot { background: var(--accent-purple); animation: pulse 1.4s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* Agent cell */
+.agent-cell { display: flex; align-items: center; gap: 8px; }
+.agent-icon {
+  width: 22px; height: 22px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.agent-name { font-size: 12px; color: var(--text-secondary); }
+
+/* Priority */
+.priority { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+.pri-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.p-high { color: var(--accent-red); }   .p-high .pri-dot { background: var(--accent-red); }
+.p-med  { color: var(--accent-orange); } .p-med  .pri-dot { background: var(--accent-orange); }
+.p-low  { color: var(--text-tertiary); } .p-low  .pri-dot { background: var(--text-tertiary); }
+
+/* Progress */
+.prog-wrap { display: flex; align-items: center; gap: 8px; }
+.prog-bar  { flex: 1; height: 3px; background: var(--bg-4); border-radius: 2px; overflow: hidden; min-width: 60px; }
+.prog-fill { height: 100%; border-radius: 2px; background: var(--accent-green); transition: width .5s ease; }
+.prog-pct  { font-size: 11px; color: var(--text-secondary); min-width: 28px; text-align: right; }
+
+.time-cell { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+
+/* ── Detail Panel (slides from right) ── */
+.panel-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 100;
+  backdrop-filter: blur(3px);
+}
+.panel-overlay.open { display: block; }
+.panel {
+  position: fixed; right: 0; top: 0; bottom: 0;
+  width: 380px; background: var(--bg-1);
+  border-left: 1px solid var(--border-strong);
+  z-index: 101;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.32,.72,0,1);
+}
+.panel.open { transform: translateX(0); }
+.panel-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-shrink: 0;
+}
+.panel-close {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--bg-3); border: none;
+  color: var(--text-secondary); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.panel-close:hover { background: var(--bg-4); color: var(--text-primary); }
+.panel-body { flex: 1; overflow-y: auto; padding: 18px 20px 28px; }
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 2px; }
+.panel-title { font-size: 17px; font-weight: 700; letter-spacing: -.2px; line-height: 1.3; }
+.panel-sub   { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+.panel-meta  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.meta-item   {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 10px 12px;
+}
+.meta-key { font-size: 10px; color: var(--text-secondary); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .4px; }
+.meta-val { font-size: 13px; font-weight: 600; }
+.p-label  { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-tertiary); margin-bottom: 7px; }
+.panel-log {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 12px; font-size: 11.5px; color: var(--text-secondary);
+  font-family: 'SF Mono','Fira Code',monospace; line-height: 1.9;
+  max-height: 200px; overflow-y: auto; margin-bottom: 20px;
+}
+.log-line { display: flex; gap: 10px; }
+.log-time { color: var(--text-tertiary); flex-shrink: 0; }
+.log-msg.success { color: var(--accent-green); }
+.log-msg.info    { color: var(--accent-blue); }
+.panel-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+/* ════════════════════════════════════
+   MOBILE LAYOUT  (< 900px)
+════════════════════════════════════ */
+.mobile-app {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* bottom-sheet panel on mobile */
+.panel-mobile {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: var(--bg-1); border: 1px solid var(--border-strong);
+  border-radius: 20px 20px 0 0; z-index: 101;
+  max-height: 88vh; display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform .28s cubic-bezier(.32,.72,0,1);
+}
+.panel-mobile.open { transform: translateY(0); }
+.panel-handle {
+  width: 36px; height: 4px; background: var(--bg-4);
+  border-radius: 2px; margin: 10px auto 0; flex-shrink: 0;
+}
+
+/* mobile-specific overrides */
+.m-status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px 6px;
+}
+.m-status-time { font-size: 15px; font-weight: 700; }
+.m-status-icons { display: flex; gap: 5px; align-items: center; }
+.m-top-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 18px 10px;
+}
+.m-avatar {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg,#30d158,#1a9e40);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; cursor: pointer;
+}
+.m-nav-actions { display: flex; gap: 6px; }
+.m-nav-btn {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-sm);
+  color: var(--text-primary); width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .15s;
+}
+.m-nav-btn-wide { width: auto; padding: 0 12px; gap: 6px; font-size: 13px; font-weight: 500; }
+.m-space-header {
+  padding: 4px 20px 12px; display: flex; align-items: center; justify-content: space-between;
+}
+.m-space-title { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+.m-view-toggles { display: flex; gap: 4px; }
+.m-view-toggle {
+  width: 32px; height: 32px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-secondary); transition: background .15s, color .15s;
+}
+.m-view-toggle:hover, .m-view-toggle.active { background: var(--bg-3); color: var(--text-primary); }
+.m-tabs {
+  display: flex; padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.m-tabs::-webkit-scrollbar { display: none; }
+.m-tab {
+  padding: 9px 0; margin-right: 22px;
+  font-size: 15px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s; white-space: nowrap; flex-shrink: 0;
+}
+.m-tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+.m-scroll { flex: 1; overflow-y: auto; }
+.m-scroll::-webkit-scrollbar { display: none; }
+.m-action-cards { padding: 16px 18px 8px; display: flex; flex-direction: column; gap: 8px; }
+.m-action-card {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: background .15s;
+}
+.m-action-card:hover { background: var(--bg-3); }
+.m-action-icon {
+  width: 36px; height: 36px; border-radius: 10px; background: var(--bg-3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: var(--accent-blue);
+}
+.m-action-title { font-size: 15px; font-weight: 600; color: var(--accent-blue); }
+.m-action-sub   { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.m-chevron { color: var(--text-tertiary); margin-left: auto; }
+.m-summary-strip { display: flex; gap: 8px; padding: 14px 18px 8px; overflow-x: auto; }
+.m-summary-strip::-webkit-scrollbar { display: none; }
+.m-sum-card {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; cursor: pointer; transition: background .15s;
+}
+.m-sum-card:hover { background: var(--bg-3); }
+.m-sum-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.m-sum-label { font-size: 11px; color: var(--text-secondary); }
+.m-sum-value { font-size: 18px; font-weight: 700; line-height: 1.1; }
+.m-search-row { padding: 10px 18px; display: flex; gap: 8px; }
+.m-search-wrap { position: relative; flex: 1; }
+.m-search-icon {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--text-secondary); pointer-events: none;
+}
+.m-search-input {
+  width: 100%; background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 8px 12px 8px 32px;
+  color: var(--text-primary); font-size: 14px; outline: none;
+}
+.m-search-input::placeholder { color: var(--text-tertiary); }
+.m-section-label {
+  padding: 16px 18px 6px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .6px; color: var(--text-tertiary);
+}
+.m-task-list { padding: 0 18px; }
+.m-task-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .1s;
+}
+.m-task-item:last-child { border-bottom: none; }
+.m-task-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--bg-4); flex-shrink: 0; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, background .15s;
+}
+.m-task-check:hover { border-color: var(--accent-green); }
+.m-task-check.done  { background: var(--accent-green); border-color: var(--accent-green); }
+.m-task-check.done::after {
+  content: ''; width: 7px; height: 4.5px;
+  border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg) translateY(-1px); display: block;
+}
+.m-task-body { flex: 1; min-width: 0; }
+.m-task-name {
+  font-size: 15px; font-weight: 500; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
+}
+.m-task-name.done { color: var(--text-secondary); text-decoration: line-through; }
+.m-task-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+.m-agent-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+.m-agent-dot {
+  width: 16px; height: 16px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.m-task-time { font-size: 11px; color: var(--text-tertiary); }
+.m-task-progress { margin-top: 7px; display: flex; align-items: center; gap: 7px; }
+.m-prog-bar { flex: 1; height: 3px; background: var(--bg-4); border-radius: 2px; overflow: hidden; }
+.m-prog-fill { height: 100%; border-radius: 2px; background: var(--accent-green); transition: width .5s ease; }
+.m-prog-pct  { font-size: 11px; color: var(--text-secondary); min-width: 28px; text-align: right; }
+.m-pri-pip { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+
+/* responsive switch */
+@media (min-width: 900px) {
+  .layout     { display: flex; }
+  .mobile-app { display: none !important; }
+}
+@media (max-width: 899px) {
+  .layout     { display: none !important; }
+  .mobile-app { display: flex !important; }
+  .panel      { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     DESKTOP LAYOUT
+══════════════════════════════════════════════ -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-avatar">AI</div>
+      <div class="sidebar-workspace">Dan's Workspace</div>
+      <div class="sidebar-chevron">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Tasks</div>
+
+    <div class="sidebar-item active" onclick="dtSwitchTab(this,'all')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      All Tasks
+      <span class="sidebar-badge">9</span>
+    </div>
+    <div class="sidebar-item" onclick="dtSwitchTab(this,'running')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Running
+      <span class="sidebar-badge">3</span>
+    </div>
+    <div class="sidebar-item" onclick="dtSwitchTab(this,'pending')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Queue
+      <span class="sidebar-badge">4</span>
+    </div>
+    <div class="sidebar-item" onclick="dtSwitchTab(this,'done')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Completed
+      <span class="sidebar-badge">2</span>
+    </div>
+    <div class="sidebar-item" onclick="dtSwitchTab(this,'failed')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Failed
+      <span class="sidebar-badge">1</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">Agents</div>
+    <div class="sidebar-item">
+      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0a84ff,#0055cc);flex-shrink:0"></div>
+      Claude 3.5
+    </div>
+    <div class="sidebar-item">
+      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#bf5af2,#8e2de2);flex-shrink:0"></div>
+      GPT-4o
+    </div>
+    <div class="sidebar-item">
+      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#ff9f0a,#c97800);flex-shrink:0"></div>
+      DeepL AI
+    </div>
+    <div class="sidebar-item">
+      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#ff453a,#b00);flex-shrink:0"></div>
+      AutoGPT
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Settings
+      </div>
+      <div class="sidebar-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+        Dan's Profile
+      </div>
+    </div>
+  </div><!-- /sidebar -->
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-header">
+      <div class="main-title-row">
+        <div class="main-title">AI Tasks</div>
+        <div class="main-actions">
+          <button class="btn btn-secondary">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            Filter
+          </button>
+          <button class="btn btn-secondary">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg>
+            Sort
+          </button>
+          <button class="btn btn-primary" onclick="openNewTask()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Task
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Strip -->
+    <div class="summary-strip">
+      <div class="sum-card" onclick="dtSwitchTabByFilter('running')">
+        <div class="sum-icon" style="background:var(--accent-blue-dim)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div>
+          <div class="sum-label">Running</div>
+          <div class="sum-value" style="color:var(--accent-blue)">3</div>
+        </div>
+      </div>
+      <div class="sum-card" onclick="dtSwitchTabByFilter('pending')">
+        <div class="sum-icon" style="background:var(--accent-orange-dim)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="sum-label">Queued</div>
+          <div class="sum-value" style="color:var(--accent-orange)">4</div>
+        </div>
+      </div>
+      <div class="sum-card" onclick="dtSwitchTabByFilter('done')">
+        <div class="sum-icon" style="background:var(--accent-green-dim)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div class="sum-label">Completed</div>
+          <div class="sum-value" style="color:var(--accent-green)">2</div>
+        </div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon" style="background:var(--accent-red-dim)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <div>
+          <div class="sum-label">Failed</div>
+          <div class="sum-value" style="color:var(--accent-red)">1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg class="search-icon-abs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" placeholder="Search tasks…" oninput="dtFilter(this.value)">
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" id="dt-tab-all"       onclick="dtSwitchTab(null,'all')">All Tasks</div>
+      <div class="tab"        id="dt-tab-running"   onclick="dtSwitchTab(null,'running')">Running</div>
+      <div class="tab"        id="dt-tab-pending"   onclick="dtSwitchTab(null,'pending')">Queue</div>
+      <div class="tab"        id="dt-tab-done"      onclick="dtSwitchTab(null,'done')">Completed</div>
+      <div class="tab"        id="dt-tab-failed"    onclick="dtSwitchTab(null,'failed')">Failed</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="check-cell"></th>
+            <th style="min-width:220px">Task</th>
+            <th style="width:120px">Status</th>
+            <th style="width:150px">Agent</th>
+            <th style="width:90px">Priority</th>
+            <th style="width:160px">Progress</th>
+            <th style="width:90px">Updated</th>
+          </tr>
+        </thead>
+        <tbody id="dt-tbody">
+
+          <tr class="section-row"><td colspan="7">Active</td></tr>
+
+          <tr class="dt-row" data-status="running" onclick="openPanel('t1')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name">Summarize Q1 sales report</div><div class="sub">Extract key metrics and write executive summary</div></div></td>
+            <td><span class="badge running"><span class="badge-dot"></span>Running</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#0a84ff,#0055cc)">C</div><span class="agent-name">Claude 3.5</span></div></td>
+            <td><div class="priority p-high"><div class="pri-dot"></div>High</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:68%"></div></div><span class="prog-pct">68%</span></div></td>
+            <td><span class="time-cell">2m ago</span></td>
+          </tr>
+
+          <tr class="dt-row" data-status="running" onclick="openPanel('t2')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name">Generate onboarding email sequence</div><div class="sub">5-part drip campaign for new trial signups</div></div></td>
+            <td><span class="badge running"><span class="badge-dot"></span>Running</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#bf5af2,#8e2de2)">G</div><span class="agent-name">GPT-4o</span></div></td>
+            <td><div class="priority p-high"><div class="pri-dot"></div>High</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:40%"></div></div><span class="prog-pct">40%</span></div></td>
+            <td><span class="time-cell">5m ago</span></td>
+          </tr>
+
+          <tr class="dt-row" data-status="reviewing" onclick="openPanel('t3')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name">Review PR #142 — auth refactor</div><div class="sub">Check for security issues and suggest improvements</div></div></td>
+            <td><span class="badge reviewing"><span class="badge-dot"></span>Reviewing</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#30d158,#1a9e40)">C</div><span class="agent-name">Claude 3.5</span></div></td>
+            <td><div class="priority p-med"><div class="pri-dot"></div>Medium</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:90%;background:var(--accent-purple)"></div></div><span class="prog-pct">90%</span></div></td>
+            <td><span class="time-cell">8m ago</span></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="7">Queued</td></tr>
+
+          <tr class="dt-row" data-status="pending" onclick="openPanel('t4')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name">Translate docs to Spanish</div><div class="sub">Help center articles, 24 pages</div></div></td>
+            <td><span class="badge pending"><span class="badge-dot"></span>Queued</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#ff9f0a,#c97800)">D</div><span class="agent-name">DeepL AI</span></div></td>
+            <td><div class="priority p-med"><div class="pri-dot"></div>Medium</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><span class="prog-pct">—</span></div></td>
+            <td><span class="time-cell">1h ago</span></td>
+          </tr>
+
+          <tr class="dt-row" data-status="pending" onclick="openPanel('t5')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name">Analyze competitor pricing pages</div><div class="sub">Scrape and compare 8 competitor sites</div></div></td>
+            <td><span class="badge pending"><span class="badge-dot"></span>Queued</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#0a84ff,#0055cc)">C</div><span class="agent-name">Claude 3.5</span></div></td>
+            <td><div class="priority p-med"><div class="pri-dot"></div>Medium</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><span class="prog-pct">—</span></div></td>
+            <td><span class="time-cell">2h ago</span></td>
+          </tr>
+
+          <tr class="dt-row" data-status="pending" onclick="openPanel('t6')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name">Draft blog post: "State of AI in 2026"</div><div class="sub">2000 words, SEO optimized</div></div></td>
+            <td><span class="badge pending"><span class="badge-dot"></span>Queued</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#bf5af2,#8e2de2)">G</div><span class="agent-name">GPT-4o</span></div></td>
+            <td><div class="priority p-low"><div class="pri-dot"></div>Low</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><span class="prog-pct">—</span></div></td>
+            <td><span class="time-cell">3h ago</span></td>
+          </tr>
+
+          <tr class="dt-row" data-status="pending" onclick="openPanel('t6b')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name">Classify support tickets from last week</div><div class="sub">~340 tickets across 6 categories</div></div></td>
+            <td><span class="badge pending"><span class="badge-dot"></span>Queued</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#30d158,#1a9e40)">C</div><span class="agent-name">Claude 3.5</span></div></td>
+            <td><div class="priority p-high"><div class="pri-dot"></div>High</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><span class="prog-pct">—</span></div></td>
+            <td><span class="time-cell">4h ago</span></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="7">Completed</td></tr>
+
+          <tr class="dt-row" data-status="done" onclick="openPanel('t7')">
+            <td><div class="task-check done"></div></td>
+            <td><div class="task-name-cell"><div class="name done">Set up CI pipeline for api-service</div><div class="sub">GitHub Actions, test + deploy stages</div></div></td>
+            <td><span class="badge done"><span class="badge-dot"></span>Done</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#30d158,#1a9e40)">C</div><span class="agent-name">Claude 3.5</span></div></td>
+            <td><div class="priority p-high"><div class="pri-dot"></div>High</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span class="prog-pct">100%</span></div></td>
+            <td><span class="time-cell">Yesterday</span></td>
+          </tr>
+
+          <tr class="dt-row" data-status="done" onclick="openPanel('t8')">
+            <td><div class="task-check done"></div></td>
+            <td><div class="task-name-cell"><div class="name done">Write unit tests for checkout flow</div><div class="sub">Coverage target: 80%</div></div></td>
+            <td><span class="badge done"><span class="badge-dot"></span>Done</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#0a84ff,#0055cc)">C</div><span class="agent-name">Claude 3.5</span></div></td>
+            <td><div class="priority p-med"><div class="pri-dot"></div>Medium</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div><span class="prog-pct">100%</span></div></td>
+            <td><span class="time-cell">Yesterday</span></td>
+          </tr>
+
+          <tr class="section-row"><td colspan="7">Failed</td></tr>
+
+          <tr class="dt-row" data-status="failed" onclick="openPanel('t9')">
+            <td><div class="task-check"></div></td>
+            <td><div class="task-name-cell"><div class="name" style="color:var(--accent-red)">Import legacy CRM data</div><div class="sub">Rate limit exceeded on source API</div></div></td>
+            <td><span class="badge failed"><span class="badge-dot"></span>Failed</span></td>
+            <td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#ff453a,#b00)">A</div><span class="agent-name">AutoGPT</span></div></td>
+            <td><div class="priority p-high"><div class="pri-dot"></div>High</div></td>
+            <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:35%;background:var(--accent-red)"></div></div><span class="prog-pct">35%</span></div></td>
+            <td><span class="time-cell">2d ago</span></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div><!-- /table-wrap -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+
+<!-- ══════════════════════════════════════════════
+     MOBILE LAYOUT
+══════════════════════════════════════════════ -->
+<div class="mobile-app">
+  <div class="m-status-bar">
+    <span class="m-status-time">12:30</span>
+    <div class="m-status-icons">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 24 18" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M1 6.5C5.5 2 10 0 12 0s6.5 2 11 6.5"/><path d="M4 10c2.2-2.5 4.8-4 8-4s5.8 1.5 8 4"/><path d="M7.5 13.5C9 12 10.5 11 12 11s3 1 4.5 2.5"/><circle cx="12" cy="17" r="1.2" fill="white"/></svg>
+      <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="0" y="0" width="21" height="12" rx="3" stroke="white" stroke-width="1.5"/><rect x="1.5" y="1.5" width="16" height="9" rx="1.5" fill="white"/><path d="M22 4.5v3c.8-.4 1.3-1 1.3-1.5S22.8 4.9 22 4.5z" fill="white"/></svg>
+    </div>
+  </div>
+  <div class="m-top-nav">
+    <div class="m-avatar">AI</div>
+    <div class="m-nav-actions">
+      <div class="m-nav-btn m-nav-btn-wide" onclick="openNewTask()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="m-nav-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="m-nav-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="m-space-header">
+    <div class="m-space-title">AI Tasks</div>
+    <div class="m-view-toggles">
+      <div class="m-view-toggle active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+      <div class="m-view-toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+      <div class="m-view-toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg></div>
+    </div>
+  </div>
+  <div class="m-tabs">
+    <div class="m-tab active" onclick="mSwitchTab(this,'all')">All Tasks</div>
+    <div class="m-tab" onclick="mSwitchTab(this,'running')">Running</div>
+    <div class="m-tab" onclick="mSwitchTab(this,'pending')">Queue</div>
+    <div class="m-tab" onclick="mSwitchTab(this,'done')">Completed</div>
+  </div>
+  <div class="m-scroll" id="mScroll">
+    <div class="m-action-cards" id="mActionCards">
+      <div class="m-action-card" onclick="openNewTask()">
+        <div class="m-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        <div><div class="m-action-title">New Task</div><div class="m-action-sub">Describe a task for AI to complete</div></div>
+        <div class="m-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="m-action-card">
+        <div class="m-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+        <div><div class="m-action-title">Run All Queued</div><div class="m-action-sub">Start 4 pending tasks in sequence</div></div>
+        <div class="m-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="m-action-card">
+        <div class="m-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="5" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="3" y="13" width="7" height="8" rx="1"/><rect x="14" y="13" width="7" height="8" rx="1"/></svg></div>
+        <div><div class="m-action-title">Templates</div><div class="m-action-sub">Browse pre-built AI task templates</div></div>
+        <div class="m-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div class="m-summary-strip">
+      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-blue-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div><div class="m-sum-label">Running</div><div class="m-sum-value" style="color:var(--accent-blue)">3</div></div></div>
+      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-orange-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="m-sum-label">Queued</div><div class="m-sum-value" style="color:var(--accent-orange)">4</div></div></div>
+      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-green-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="m-sum-label">Done</div><div class="m-sum-value" style="color:var(--accent-green)">2</div></div></div>
+      <div class="m-sum-card"><div class="m-sum-icon" style="background:var(--accent-red-dim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div><div class="m-sum-label">Failed</div><div class="m-sum-value" style="color:var(--accent-red)">1</div></div></div>
+    </div>
+    <div class="m-search-row">
+      <div class="m-search-wrap">
+        <svg class="m-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="m-search-input" type="text" placeholder="Search tasks…">
+      </div>
+    </div>
+    <div class="m-section-label" id="mSec-active">Active</div>
+    <div class="m-task-list">
+      <div class="m-task-item" data-status="running" onclick="openPanel('t1')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name">Summarize Q1 sales report</div><div class="m-task-meta"><span class="badge running"><span class="badge-dot"></span>Running</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#0a84ff,#0055cc)">C</span>Claude 3.5</span><span class="m-task-time">2m ago</span></div><div class="m-task-progress"><div class="m-prog-bar"><div class="m-prog-fill" style="width:68%"></div></div><span class="m-prog-pct">68%</span></div></div><div class="m-pri-pip p-high"></div></div>
+      <div class="m-task-item" data-status="running" onclick="openPanel('t2')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name">Generate onboarding email sequence</div><div class="m-task-meta"><span class="badge running"><span class="badge-dot"></span>Running</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#bf5af2,#8e2de2)">G</span>GPT-4o</span><span class="m-task-time">5m ago</span></div><div class="m-task-progress"><div class="m-prog-bar"><div class="m-prog-fill" style="width:40%"></div></div><span class="m-prog-pct">40%</span></div></div><div class="m-pri-pip p-high"></div></div>
+      <div class="m-task-item" data-status="reviewing" onclick="openPanel('t3')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name">Review PR #142 — auth refactor</div><div class="m-task-meta"><span class="badge reviewing"><span class="badge-dot"></span>Reviewing</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#30d158,#1a9e40)">C</span>Claude 3.5</span><span class="m-task-time">8m ago</span></div><div class="m-task-progress"><div class="m-prog-bar"><div class="m-prog-fill" style="width:90%;background:var(--accent-purple)"></div></div><span class="m-prog-pct">90%</span></div></div><div class="m-pri-pip p-med"></div></div>
+    </div>
+    <div class="m-section-label" id="mSec-pending">Queued</div>
+    <div class="m-task-list">
+      <div class="m-task-item" data-status="pending" onclick="openPanel('t4')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name">Translate docs to Spanish</div><div class="m-task-meta"><span class="badge pending"><span class="badge-dot"></span>Queued</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#ff9f0a,#c97800)">D</span>DeepL AI</span><span class="m-task-time">1h ago</span></div></div><div class="m-pri-pip p-med"></div></div>
+      <div class="m-task-item" data-status="pending" onclick="openPanel('t5')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name">Analyze competitor pricing pages</div><div class="m-task-meta"><span class="badge pending"><span class="badge-dot"></span>Queued</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#0a84ff,#0055cc)">C</span>Claude 3.5</span><span class="m-task-time">2h ago</span></div></div><div class="m-pri-pip p-med"></div></div>
+      <div class="m-task-item" data-status="pending" onclick="openPanel('t6')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name">Draft blog post: "State of AI in 2026"</div><div class="m-task-meta"><span class="badge pending"><span class="badge-dot"></span>Queued</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#bf5af2,#8e2de2)">G</span>GPT-4o</span><span class="m-task-time">3h ago</span></div></div><div class="m-pri-pip p-low"></div></div>
+      <div class="m-task-item" data-status="pending" onclick="openPanel('t6b')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name">Classify support tickets from last week</div><div class="m-task-meta"><span class="badge pending"><span class="badge-dot"></span>Queued</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#30d158,#1a9e40)">C</span>Claude 3.5</span><span class="m-task-time">4h ago</span></div></div><div class="m-pri-pip p-high"></div></div>
+    </div>
+    <div class="m-section-label" id="mSec-done">Completed</div>
+    <div class="m-task-list">
+      <div class="m-task-item" data-status="done" onclick="openPanel('t7')"><div class="m-task-check done"></div><div class="m-task-body"><div class="m-task-name done">Set up CI pipeline for api-service</div><div class="m-task-meta"><span class="badge done"><span class="badge-dot"></span>Done</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#30d158,#1a9e40)">C</span>Claude 3.5</span><span class="m-task-time">Yesterday</span></div></div><div class="m-pri-pip p-high"></div></div>
+      <div class="m-task-item" data-status="done" onclick="openPanel('t8')"><div class="m-task-check done"></div><div class="m-task-body"><div class="m-task-name done">Write unit tests for checkout flow</div><div class="m-task-meta"><span class="badge done"><span class="badge-dot"></span>Done</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#0a84ff,#0055cc)">C</span>Claude 3.5</span><span class="m-task-time">Yesterday</span></div></div><div class="m-pri-pip p-med"></div></div>
+      <div class="m-task-item" data-status="failed" onclick="openPanel('t9')"><div class="m-task-check"></div><div class="m-task-body"><div class="m-task-name" style="color:var(--accent-red)">Import legacy CRM data</div><div class="m-task-meta"><span class="badge failed"><span class="badge-dot"></span>Failed</span><span class="m-agent-pill"><span class="m-agent-dot" style="background:linear-gradient(135deg,#ff453a,#b00)">A</span>AutoGPT</span><span class="m-task-time">2d ago</span></div><div class="m-task-progress"><div class="m-prog-bar"><div class="m-prog-fill" style="width:35%;background:var(--accent-red)"></div></div><span class="m-prog-pct">35%</span></div></div><div class="m-pri-pip p-high"></div></div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- Shared Panel Overlay -->
+<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+
+<!-- Shared Detail Panel (desktop: slides from right; mobile: overridden to bottom sheet) -->
+<div class="panel" id="detailPanel">
+  <div class="panel-handle" style="display:none" id="panelHandleMobile"></div>
+  <div class="panel-header">
+    <div>
+      <div class="panel-title" id="panelTitle"></div>
+      <div class="panel-sub"   id="panelSub"></div>
+    </div>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="panel-meta">
+      <div class="meta-item"><div class="meta-key">Status</div><div class="meta-val" id="pStatus">—</div></div>
+      <div class="meta-item"><div class="meta-key">Agent</div><div class="meta-val"  id="pAgent">—</div></div>
+      <div class="meta-item"><div class="meta-key">Priority</div><div class="meta-val" id="pPriority">—</div></div>
+      <div class="meta-item"><div class="meta-key">Progress</div><div class="meta-val" id="pProgress">—</div></div>
+    </div>
+    <div class="p-label">Agent Log</div>
+    <div class="panel-log">
+      <div class="log-line"><span class="log-time">09:12:01</span><span class="log-msg info">Task received. Starting analysis…</span></div>
+      <div class="log-line"><span class="log-time">09:12:04</span><span class="log-msg">Loading document context (48 pages)</span></div>
+      <div class="log-line"><span class="log-time">09:12:11</span><span class="log-msg">Chunking content into 12 segments</span></div>
+      <div class="log-line"><span class="log-time">09:12:18</span><span class="log-msg info">Processing segments 1–4…</span></div>
+      <div class="log-line"><span class="log-time">09:12:35</span><span class="log-msg">Identified 7 key metrics</span></div>
+      <div class="log-line"><span class="log-time">09:12:52</span><span class="log-msg success">Extracted revenue data ✓</span></div>
+      <div class="log-line"><span class="log-time">09:13:01</span><span class="log-msg info">Drafting executive summary…</span></div>
+    </div>
+    <div class="p-label" style="margin-bottom:8px">Description</div>
+    <div class="panel-desc" id="pDesc"></div>
+  </div>
+</div>
+
+<script>
+const tasks = {
+  t1:  { title:'Summarize Q1 sales report',              sub:'Extract key metrics and write executive summary',     status:'Running',   agent:'Claude 3.5', priority:'High',   progress:'68%',  desc:'Analyze the Q1 2026 sales report and produce a concise executive summary highlighting revenue trends, top-performing segments, and recommendations.' },
+  t2:  { title:'Generate onboarding email sequence',     sub:'5-part drip campaign for new trial signups',          status:'Running',   agent:'GPT-4o',     priority:'High',   progress:'40%',  desc:'Create a 5-email drip sequence to increase feature adoption and drive conversion to paid plan within 14 days.' },
+  t3:  { title:'Review PR #142 — auth refactor',         sub:'Check for security issues and suggest improvements',  status:'Reviewing', agent:'Claude 3.5', priority:'Medium', progress:'90%',  desc:'Review the authentication refactor PR. Focus on JWT handling, session management, and XSS/CSRF vulnerabilities.' },
+  t4:  { title:'Translate docs to Spanish',              sub:'Help center articles, 24 pages',                     status:'Queued',    agent:'DeepL AI',   priority:'Medium', progress:'—',    desc:'Translate all 24 help center articles from English to Spanish (Latin America).' },
+  t5:  { title:'Analyze competitor pricing pages',       sub:'Scrape and compare 8 competitor sites',              status:'Queued',    agent:'Claude 3.5', priority:'Medium', progress:'—',    desc:'Extract pricing tiers, feature tables, and positioning language from 8 competitors into a structured report.' },
+  t6:  { title:'Draft blog post: "State of AI in 2026"', sub:'2000 words, SEO optimized',                          status:'Queued',    agent:'GPT-4o',     priority:'Low',    progress:'—',    desc:'Write a 2000-word thought leadership post optimized for "AI task automation 2026".' },
+  t6b: { title:'Classify support tickets from last week',sub:'~340 tickets across 6 categories',                  status:'Queued',    agent:'Claude 3.5', priority:'High',   progress:'—',    desc:'Categorize 340 tickets into: Bug, Feature Request, Billing, Onboarding, Performance, Other.' },
+  t7:  { title:'Set up CI pipeline for api-service',     sub:'GitHub Actions, test + deploy stages',               status:'Done',      agent:'Claude 3.5', priority:'High',   progress:'100%', desc:'Configured GitHub Actions CI/CD with test and deploy workflows. Includes coverage reporting and Docker build.' },
+  t8:  { title:'Write unit tests for checkout flow',     sub:'Coverage target: 80%',                               status:'Done',      agent:'Claude 3.5', priority:'Medium', progress:'100%', desc:'Generated unit tests covering cart validation, payment processing, and order confirmation. Final coverage: 84%.' },
+  t9:  { title:'Import legacy CRM data',                 sub:'Rate limit exceeded on source API',                  status:'Failed',    agent:'AutoGPT',    priority:'High',   progress:'35%',  desc:'Failed at record 4,200 of 12,000 due to rate limiting. Needs retry with exponential backoff.' },
+};
+
+// ── DESKTOP ──────────────────────────────────────
+let dtCurrentFilter = 'all';
+function dtSwitchTab(el, filter) {
+  dtCurrentFilter = filter;
+  // update sidebar items
+  document.querySelectorAll('.sidebar-item').forEach(i => {
+    if (i.getAttribute('onclick') && i.getAttribute('onclick').includes("'"+filter+"'")) i.classList.add('active');
+    else i.classList.remove('active');
+  });
+  // update tabs
+  ['all','running','pending','done','failed'].forEach(f => {
+    const t = document.getElementById('dt-tab-'+f);
+    if (t) t.classList.toggle('active', f===filter);
+  });
+  applyDtFilter(filter);
+}
+function dtSwitchTabByFilter(f) { dtSwitchTab(null, f); }
+function applyDtFilter(filter) {
+  document.querySelectorAll('.dt-row').forEach(row => {
+    row.style.display = (filter==='all' || row.dataset.status===filter) ? '' : 'none';
+  });
+  document.querySelectorAll('.section-row').forEach(s => {
+    s.style.display = filter==='all' ? '' : 'none';
+  });
+}
+function dtFilter(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.dt-row').forEach(row => {
+    const n = row.querySelector('.name').textContent.toLowerCase();
+    row.style.display = n.includes(q) ? '' : 'none';
+  });
+}
+
+// ── MOBILE ───────────────────────────────────────
+function mSwitchTab(el, filter) {
+  document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const ac = document.getElementById('mActionCards');
+  ac.style.display = filter==='all' ? '' : 'none';
+  document.querySelectorAll('.m-task-item').forEach(i => {
+    i.style.display = (filter==='all' || i.dataset.status===filter) ? '' : 'none';
+  });
+  ['active','pending','done'].forEach(s => {
+    const el2 = document.getElementById('mSec-'+s);
+    if (el2) el2.style.display = filter==='all' ? '' : 'none';
+  });
+}
+
+// ── PANEL ────────────────────────────────────────
+function openPanel(id) {
+  const t = tasks[id]; if (!t) return;
+  document.getElementById('panelTitle').textContent  = t.title;
+  document.getElementById('panelSub').textContent    = t.sub;
+  document.getElementById('pStatus').textContent     = t.status;
+  document.getElementById('pAgent').textContent      = t.agent;
+  document.getElementById('pPriority').textContent   = t.priority;
+  document.getElementById('pProgress').textContent   = t.progress;
+  document.getElementById('pDesc').textContent       = t.desc;
+
+  // on mobile: bottom sheet; on desktop: slide from right
+  const isMobile = window.innerWidth < 900;
+  const panel = document.getElementById('detailPanel');
+  const handle = document.getElementById('panelHandleMobile');
+  if (isMobile) {
+    panel.style.cssText = 'position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:88vh;border-radius:20px 20px 0 0;border-left:none;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1)';
+    handle.style.display = 'block';
+  } else {
+    panel.style.cssText = '';
+    handle.style.display = 'none';
+  }
+  document.getElementById('panelOverlay').classList.add('open');
+  requestAnimationFrame(() => panel.classList.add('open'));
+}
+function closePanel() {
+  document.getElementById('panelOverlay').classList.remove('open');
+  document.getElementById('detailPanel').classList.remove('open');
+}
+function openNewTask() { alert('New task dialog — coming next iteration!'); }
+
+// Animate progress bars on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.prog-fill, .m-prog-fill').forEach(f => {
+    const w = f.style.width; f.style.width = '0';
+    setTimeout(() => { f.style.width = w; }, 200);
+  });
+});
+</script>
+</body>
+</html>

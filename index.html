@@ -959,11 +959,11 @@ function renderDesktop(tasks) {
         <td><span class="badge ${t.status}"><span class="badge-dot"></span>${STATUS_LABEL[t.status]||t.status}</span></td>
         <td><div class="agent-cell">
           <div class="agent-icon" style="background:${agentGradient(t.agent)}">${agentInitial(t.agent)}</div>
-          <span class="agent-name">${esc(t.agent||'Unassigned')}</span>
+          <span class="agent-name">${esc(t.agent||'—')}</span>
         </div></td>
         <td><div class="priority ${priClass(t.priority)}"><div class="pri-dot"></div>${t.priority}</div></td>
         <td><div class="prog-wrap">
-          <div class="prog-bar"><div class="prog-fill" style="width:${t.progress}%;background:${progColor}"></div></div>
+          <div class="prog-bar"><div class="prog-fill" data-pct="${t.progress}%" style="width:${t.progress}%;background:${progColor}"></div></div>
           <span class="prog-pct">${t.progressStr}</span>
         </div></td>
         <td><span class="time-cell">${esc(t.updatedRel||'—')}</span></td>
@@ -997,12 +997,12 @@ function renderMobile(tasks) {
             <span class="badge ${t.status}"><span class="badge-dot"></span>${STATUS_LABEL[t.status]||t.status}</span>
             <span class="m-agent-pill">
               <span class="m-agent-dot" style="background:${agentGradient(t.agent)}">${agentInitial(t.agent)}</span>
-              ${esc(t.agent||'Unassigned')}
+              ${esc(t.agent||'—')}
             </span>
             <span class="m-task-time">${esc(t.updatedRel||'—')}</span>
           </div>
           ${hasBar ? `<div class="m-task-progress">
-            <div class="m-prog-bar"><div class="m-prog-fill" style="width:${t.progress}%;background:${progColor}"></div></div>
+            <div class="m-prog-bar"><div class="m-prog-fill" data-pct="${t.progress}%" style="width:${t.progress}%;background:${progColor}"></div></div>
             <span class="m-prog-pct">${t.progressStr}</span>
           </div>` : ''}
         </div>
@@ -1053,8 +1053,13 @@ function updateCounts(tasks) {
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function animateBars() {
   document.querySelectorAll('.prog-fill, .m-prog-fill').forEach(f => {
-    const w = f.style.width; f.style.width = '0';
-    setTimeout(() => { f.style.width = w; }, 150);
+    const target = f.dataset.pct || f.style.width;
+    f.style.transition = 'none';
+    f.style.width = '0';
+    // force reflow so the transition fires
+    void f.offsetWidth;
+    f.style.transition = '';
+    f.style.width = target;
   });
 }
 
@@ -1132,7 +1137,7 @@ function setSort(field) {
 }
 function applyAll() {
   let tasks = activeAgent
-    ? DISPATCH_TASKS.filter(t => (t.agent || 'Unassigned') === activeAgent)
+    ? DISPATCH_TASKS.filter(t => (t.agent || '—') === activeAgent)
     : [...DISPATCH_TASKS];
 
   // priority filter
@@ -1202,7 +1207,7 @@ function openPanel(id) {
     </div>
     <div class="panel-meta">
       <div class="meta-item"><div class="meta-key">Status</div><div class="meta-val">${STATUS_LABEL[t.status]||t.status}</div></div>
-      <div class="meta-item"><div class="meta-key">Agent</div><div class="meta-val">${esc(t.agent||'Unassigned')}</div></div>
+      <div class="meta-item"><div class="meta-key">Agent</div><div class="meta-val">${esc(t.agent||'—')}</div></div>
       <div class="meta-item"><div class="meta-key">Priority</div><div class="meta-val">${esc(t.priority)}</div></div>
       <div class="meta-item"><div class="meta-key">Progress</div><div class="meta-val">${esc(t.progressStr)}</div></div>
       <div class="meta-item"><div class="meta-key">Effort</div><div class="meta-val">${esc(t.effort||'—')}</div></div>
@@ -1248,7 +1253,7 @@ let activeAgent = null;
 function renderAgents(tasks) {
   const counts = {};
   tasks.forEach(t => {
-    const a = t.agent || 'Unassigned';
+    const a = t.agent || '—';
     counts[a] = (counts[a] || 0) + 1;
   });
   const agents = Object.keys(counts).sort();

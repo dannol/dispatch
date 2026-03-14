@@ -1086,8 +1086,7 @@ function applyDtFilter(filter) {
     const s = row.dataset.status;
     const show = filter==='all'
       || filter===s
-      || (filter==='running' && s==='reviewing')
-      || (filter==='pending' && s==='blocked');
+      || (filter==='running' && s==='reviewing');
     row.style.display = show ? '' : 'none';
   });
   document.querySelectorAll('.section-row').forEach(s => {
@@ -1180,8 +1179,7 @@ function mSwitchTab(el, filter) {
     const s = i.dataset.status;
     const show = filter==='all'
       || filter===s
-      || (filter==='running' && s==='reviewing')
-      || (filter==='pending' && s==='blocked');
+      || (filter==='running' && s==='reviewing');
     i.style.display = show ? '' : 'none';
   });
   document.querySelectorAll('.m-section-label').forEach(l => {
